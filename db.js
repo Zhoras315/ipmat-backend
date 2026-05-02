@@ -310,6 +310,46 @@ if (subjectCount === 0) {
   })();
 }
 
+// ── Seed IPMAT topics (run once) ─────────────────────────────────────────────
+const topicCount = db.prepare('SELECT COUNT(*) AS n FROM topics').get().n;
+if (topicCount === 0) {
+  const getSubject  = db.prepare('SELECT subject_id FROM subjects WHERE name = ?');
+  const insertTopic = db.prepare(`
+    INSERT INTO topics
+      (subject_id, name, difficulty_weight, baseline_intensity, priority_bias,
+       estimated_hours_min, estimated_hours_max, recommended_sessions_min, recommended_sessions_max)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  db.transaction(() => {
+    const qaId = getSubject.get('Quantitative Aptitude').subject_id;
+    const vaId = getSubject.get('Verbal Ability').subject_id;
+    const lrId = getSubject.get('Logical Reasoning').subject_id;
+
+    // Quantitative Aptitude
+    insertTopic.run(qaId, 'Number System',           'heavy',  'high',   'high',    2, 4, 3, 6);
+    insertTopic.run(qaId, 'Algebra',                 'heavy',  'high',   'high',    2, 4, 3, 6);
+    insertTopic.run(qaId, 'Arithmetic',              'medium', 'high',   'high',    2, 3, 2, 5);
+    insertTopic.run(qaId, 'Geometry & Mensuration',  'heavy',  'medium', 'neutral', 2, 4, 2, 5);
+    insertTopic.run(qaId, 'Data Interpretation',     'medium', 'medium', 'neutral', 1, 3, 2, 4);
+
+    // Verbal Ability
+    insertTopic.run(vaId, 'Reading Comprehension',   'medium', 'high',   'high',    1, 3, 2, 5);
+    insertTopic.run(vaId, 'Vocabulary',              'light',  'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(vaId, 'Grammar & Usage',         'light',  'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(vaId, 'Para Jumbles',            'medium', 'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(vaId, 'Critical Reasoning',      'medium', 'medium', 'neutral', 1, 2, 1, 3);
+
+    // Logical Reasoning
+    insertTopic.run(lrId, 'Arrangements & Puzzles',  'medium', 'high',   'high',    1, 3, 2, 4);
+    insertTopic.run(lrId, 'Series & Sequences',      'light',  'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(lrId, 'Syllogisms',              'light',  'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(lrId, 'Data Sufficiency',        'medium', 'medium', 'neutral', 1, 2, 1, 3);
+    insertTopic.run(lrId, 'Blood Relations',         'light',  'low',    'low',     1, 2, 1, 2);
+    insertTopic.run(lrId, 'Coding-Decoding',         'light',  'low',    'low',     1, 2, 1, 2);
+  })();
+}
+
 // ── Seed admin account (run once) ────────────────────────────────────────────
 const adminEmail = 'dhku31549@gmail.com';
 const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
