@@ -1,4 +1,5 @@
 import Database from 'better-sqlite3';
+import bcrypt from 'bcryptjs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
@@ -307,6 +308,17 @@ if (subjectCount === 0) {
     ins.run('Logical Reasoning',
       'Analytical reasoning, puzzles, series, and logical deduction.');
   })();
+}
+
+// ── Seed admin account (run once) ────────────────────────────────────────────
+const adminEmail = 'dhku31549@gmail.com';
+const adminExists = db.prepare('SELECT id FROM users WHERE email = ?').get(adminEmail);
+if (!adminExists) {
+  const hash = bcrypt.hashSync('Test@123', 10);
+  db.prepare(`
+    INSERT INTO users (name, email, password_hash, email_verified, is_admin)
+    VALUES (?, ?, ?, 1, 1)
+  `).run('Admin', adminEmail, hash);
 }
 
 export default db;
